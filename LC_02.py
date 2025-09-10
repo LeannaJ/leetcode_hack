@@ -8,11 +8,11 @@ class ListNode:
 class Solution:
     def addTwoNumbers(self, l1: Optional[ListNode], l2: Optional[ListNode]) -> Optional[ListNode]:
         
-        # Edge case 1: 둘 다 None일 경우
+        # Edge case 1: 둘 다 falsy value일 경우
         if not l1 and not l2:
             return ListNode(0)  # 혹은 return None, 문제 정책에 맞게 선택
 
-        # Edge case 2: 한쪽이 None일 경우 → 그냥 다른 쪽을 반환
+        # Edge case 2: 한쪽이 falsy value일 경우 → 그냥 다른 쪽을 반환
         if not l1: return l2
         if not l2: return l1
         
@@ -57,3 +57,60 @@ l1 = build_list([2,4,3])
 l2 = build_list([5,6,4])
 res = Solution().addTwoNumbers(l1, l2)
 print(to_array(res))
+
+
+# CoderPad/HackerRank Test
+# Definition for singly-linked list.
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+def addTwoNumbers(l1: ListNode, l2: ListNode) -> ListNode:
+    # dummy head simplifies result list construction
+    dummy = ListNode(0)
+    tail = dummy
+    carry = 0
+
+    # iterate until both lists and carry are consumed
+    while l1 or l2 or carry:
+        # take current values (0 if list is exhausted)
+        x = l1.val if l1 else 0
+        y = l2.val if l2 else 0
+
+        # add digits with carry
+        total = x + y + carry
+        carry = total // 10
+
+        # create new node for current digit
+        tail.next = ListNode(total % 10)
+        tail = tail.next
+
+        # move to next nodes if available
+        if l1: l1 = l1.next
+        if l2: l2 = l2.next
+
+    # return head of the result list
+    return dummy.next
+
+# --- Example test (for CoderPad) ---
+def build_list(nums):
+    dummy = ListNode()
+    cur = dummy
+    for n in nums:
+        cur.next = ListNode(n)
+        cur = cur.next
+    return dummy.next
+
+def print_list(node):
+    vals = []
+    while node:
+        vals.append(node.val)
+        node = node.next
+    print(vals)
+
+if __name__ == "__main__":
+    l1 = build_list([2,4,3])   # 342
+    l2 = build_list([5,6,4])   # 465
+    res = addTwoNumbers(l1, l2) # expect [7,0,8] -> 807
+    print_list(res)

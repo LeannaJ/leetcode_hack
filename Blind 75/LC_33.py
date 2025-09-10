@@ -30,49 +30,63 @@ class Solution:
 
 
 # CoderPad/HackerRank Test
-def search_rotated(nums, target):
-    # Edge case 1: nums 가 None 일 경우
-    if not nums:
-        return -1
-    # Edge case 2: nums 가 1개일 경우
-    if len(nums) == 1:
-        return 0 if nums[0] == target else -1
+# Time: Average O(log n), Worst O(n) when many duplicates collapse order info
+# Space: O(1)
 
-    left, right = 0, len(nums) - 1
-    while left <= right:
-        mid = (left + right) // 2
+from typing import List
 
-        #Quick Boundary Checks
-        if nums[left] == target:
-            return left
-        if nums[right] == target:
-            return right
-        if nums[mid] == target:
-            return mid
-
-        if nums[left] <= nums[mid]:
-            if nums[left] <= target < nums[mid]:
-                right = mid - 1
+def search_rotated_robust(nums: List[int], target: int) -> int:
+    # Fast path for empty
+    if not nums:  # handle empty list
+        return -1  # not found
+    
+    left: int = 0  # left index
+    right: int = len(nums) - 1  # right index
+    
+    while left <= right:  # standard binary search outer loop
+        mid: int = (left + right) // 2  # middle index
+        
+        # Direct match check
+        if nums[mid] == target:  # found target
+            return mid  # return index
+        
+        # --- Duplicate edge handling ---
+        # If endpoints equal mid, we cannot decide which side is sorted.
+        # Shrink both ends to break ties (may degrade to O(n) in worst-case).
+        if nums[left] == nums[mid] == nums[right]:  # ambiguous ordering due to duplicates
+            left += 1  # shrink from left
+            right -= 1  # shrink from right
+            continue  # re-evaluate
+        
+        # --- Normal rotated binary search logic ---
+        if nums[left] <= nums[mid]:  # left half is sorted (non-strict to include equal)
+            if nums[left] <= target < nums[mid]:  # target is in the sorted left half
+                right = mid - 1  # move right pointer left
             else:
-                left = mid + 1
-        else:
-            if nums[mid] < target <= nums[right]:
-                left = mid + 1
+                left = mid + 1  # move left pointer right
+        else:  # right half is sorted
+            if nums[mid] < target <= nums[right]:  # target is in the sorted right half
+                left = mid + 1  # narrow to right half
             else:
-                right = mid - 1
+                right = mid - 1  # narrow to left half
+    
+    # Not found
     return -1
 
-def main():
-    n = int(input().strip())
-    nums = list(map(int, input().strip().split()))
-    target = int(input().strip())
 
-    # Validation Check
-    if len(nums) < n:                                       # (1) nums 의 길이가 n 보다 작으면 pass
-        pass
-    nums = nums[:n]                                         # (2) nums 의 길이가 n 보다 크거나 같으면 nums 의 첫 n 개의 요소만 사용 (enforce exactly n numbers (trim or ignore extras))
-
-    print(search_rotated(nums, target))
-
+# --- Extra tests for robustness (run in CoderPad) ---
 if __name__ == "__main__":
-    main()        
+    # Empty and single-element
+    print(search_rotated_robust([], 5))                    # expected -1
+    print(search_rotated_robust([10], 10))                # expected 0
+    
+    # Standard rotated cases
+    print(search_rotated_robust([4,5,6,7,0,1,2], 0))      # expected 4
+    print(search_rotated_robust([6,7,1,2,3,4,5], 3))      # expected 4
+    
+    # Negative, large values
+    print(search_rotated_robust([1000000, 2000000, -5, 0, 1, 2], -5))  # expected 2
+    
+    # With duplicates (not required by LC33 but robust)
+    print(search_rotated_robust([2,2,2,3,4,2], 3))        # expected 3
+    print(search_rotated_robust([1,1,1,1,1], 2))          # expected -1

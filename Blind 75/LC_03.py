@@ -19,41 +19,36 @@ class Solution:
         return best                                           # (11) 가장 긴 부분 문자열의 길이를 반환
     
 
-# Test
+# CoderPad/HackerRank Test
+
 def length_of_longest_substring(s: str) -> int:
-    
-    # Edge case 1: s 가 None 일 경우
-    if s is None:
+    """
+    Returns the length of the longest substring without repeating characters.
+    Sliding window + hashmap approach.
+    Time: O(n), Space: O(min(n, charset))
+    """
+    if not s:  # handle empty string
         return 0
-    
-    last_pos = {}
-    left = 0
-    best = 0
+
+    last_idx = {}      # store last seen index of each character
+    left = 0           # left boundary of sliding window
+    max_len = 0        # track best length
 
     for right, ch in enumerate(s):
-        if ch in last_pos and last_pos[ch] >= left:
-            left = last_pos[ch] + 1
-        
-        last_pos[ch] = right
-        curr_len = right - left + 1
-        if curr_len > best:
-            best = curr_len
-    
-    return best
+        if ch in last_idx and last_idx[ch] >= left:
+            # move left pointer right after the previous duplicate
+            left = last_idx[ch] + 1
+        last_idx[ch] = right
+        max_len = max(max_len, right - left + 1)
 
+    return max_len
+
+
+# Simple tests (for CoderPad)
 if __name__ == "__main__":
-    tests = [
-        ("abcabcbb", 3),
-        ("bbbbb", 1),
-        ("pwwkew", 3),
-        ("", 0),
-        (" ", 1)
-        ("a", 1),
-        ("aa", 1),
-        ("ab", 2),
-        ("abc", 3),
-        ("abcd", 4),
-    ]
-    for s, expected in tests:
-        got = length_of_longest_substring(s)
-        print(f"s={s!r}, expected={expected}, got={got}")
+    print(length_of_longest_substring("abcabcbb"))  # expect 3 ("abc")
+    print(length_of_longest_substring("bbbbb"))     # expect 1 ("b")
+    print(length_of_longest_substring("pwwkew"))    # expect 3 ("wke")
+    print(length_of_longest_substring(""))          # expect 0
+    print(length_of_longest_substring("au"))        # expect 2 ("au")
+    print(length_of_longest_substring("abba"))      # expect 2 ("ab" or "ba")
